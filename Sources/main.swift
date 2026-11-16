@@ -1,4 +1,4 @@
-// ClaudeCmdEnter — a tiny menu bar helper for the Claude desktop app.
+// SendKey for Claude — a tiny menu bar helper for the Claude desktop app.
 //
 //   Enter                -> new line  (Claude receives it as Shift+Enter)
 //   ⌘+Enter (default)    -> send      (Claude receives it as plain Enter)
@@ -138,14 +138,14 @@ final class Helper: NSObject, NSMenuDelegate {
             tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
             eventsOfInterest: keys, callback: callback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()) else {
-            NSLog("ClaudeCmdEnter: macOS refused the keyboard hook (permission problem)")
+            NSLog("SendKey: macOS refused the keyboard hook (permission problem)")
             return
         }
         tap = newTap
         tapSource = CFMachPortCreateRunLoopSource(nil, newTap, 0)
         CFRunLoopAddSource(CFRunLoopGetMain(), tapSource, .commonModes)
         CGEvent.tapEnable(tap: newTap, enable: true)
-        NSLog("ClaudeCmdEnter: keyboard hook started")
+        NSLog("SendKey: keyboard hook started")
     }
 
     func stopTap() {
@@ -155,7 +155,7 @@ final class Helper: NSObject, NSMenuDelegate {
         CFMachPortInvalidate(oldTap)      // the hook is now completely gone
         tap = nil
         tapSource = nil
-        NSLog("ClaudeCmdEnter: keyboard hook removed")
+        NSLog("SendKey: keyboard hook removed")
     }
 
     /// Called by macOS for every key event while the hook exists.
@@ -195,9 +195,9 @@ final class Helper: NSObject, NSMenuDelegate {
     func createMenuBarItem() {
         guard statusItem == nil else { return }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.autosaveName = "ClaudeCmdEnterItem"
+        item.autosaveName = "SendKeyItem"
         item.isVisible = false
-        item.button?.toolTip = "ClaudeCmdEnter"
+        item.button?.toolTip = "SendKey for Claude"
 
         let menu = NSMenu()
         menu.delegate = self
@@ -230,7 +230,7 @@ final class Helper: NSObject, NSMenuDelegate {
         let settings = NSMenuItem(title: "Open Accessibility Settings…",
                                   action: #selector(openSettings), keyEquivalent: "")
         settings.image = Icons.symbol("gearshape")
-        let quit = NSMenuItem(title: "Quit ClaudeCmdEnter",
+        let quit = NSMenuItem(title: "Quit SendKey for Claude",
                               action: #selector(quitHelper), keyEquivalent: "q")
         quit.image = Icons.symbol("power")
         settings.target = self
@@ -280,7 +280,7 @@ final class Helper: NSObject, NSMenuDelegate {
     func fixInvisibleMenuBarItem() {
         guard claudeRunning, let item = statusItem, item.isVisible,
               (item.button?.window?.frame.width ?? 0) < 1 else { return }
-        NSLog("ClaudeCmdEnter: menu bar item had zero width, showing it again")
+        NSLog("SendKey: menu bar item had zero width, showing it again")
         item.isVisible = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { item.isVisible = true }
     }

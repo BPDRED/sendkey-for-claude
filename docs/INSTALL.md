@@ -1,4 +1,4 @@
-# ClaudeCmdEnter: full install guide
+# SendKey for Claude: full install guide
 
 The detailed guide. For the short version, see the [README](../README.md).
 
@@ -50,7 +50,7 @@ Then do the **Permission** step below.
 
 ### The manual way, step by step
 
-1. **Build.** This creates `build/ClaudeCmdEnter.app`.
+1. **Build.** This creates `build/SendKey for Claude.app`.
 
    ```bash
    ./build.sh
@@ -62,11 +62,11 @@ Then do the **Permission** step below.
 2. **Copy the app** to the Applications folder inside your home folder.
 
    ```bash
-   mkdir -p ~/Applications && cp -R build/ClaudeCmdEnter.app ~/Applications/
+   mkdir -p ~/Applications && cp -R "build/SendKey for Claude.app" ~/Applications/
    ```
 
 3. **Start at login.** `install.sh` writes a small text file here:
-   `~/Library/LaunchAgents/local.claudecmdenter.plist`.
+   `~/Library/LaunchAgents/local.sendkeyforclaude.plist`.
    It tells macOS: "start this program when I log in". The easiest way to
    create it is to run `./install.sh` (it does steps 1 to 4 for you).
    You can open the file with TextEdit to read it.
@@ -74,7 +74,7 @@ Then do the **Permission** step below.
 4. **Start it now.**
 
    ```bash
-   launchctl bootstrap gui/$UID ~/Library/LaunchAgents/local.claudecmdenter.plist
+   launchctl bootstrap gui/$UID ~/Library/LaunchAgents/local.sendkeyforclaude.plist
    ```
 
 5. **Permission.** See the next section.
@@ -85,7 +85,7 @@ Then do the **Permission** step below.
 - It works on macOS 12 and newer (SMAppService needs macOS 13).
 - It does not depend on the app's signature, so it keeps working after a rebuild.
 
-macOS may show a notification: *"Background Items Added – ClaudeCmdEnter"*.
+macOS may show a notification: *"Background Items Added – SendKey for Claude"*.
 This is normal. It is this start-at-login file.
 
 ## Permission (you must do this once)
@@ -93,17 +93,17 @@ This is normal. It is this start-at-login file.
 macOS does not allow any program to change key presses without your OK.
 
 1. Open **System Settings → Privacy & Security → Accessibility**.
-2. Find **ClaudeCmdEnter** in the list and turn its switch **ON**.
+2. Find **SendKey for Claude** in the list and turn its switch **ON**.
    macOS asks for your Mac password or Touch ID.
-3. If ClaudeCmdEnter is not in the list: click **+**, press **Cmd+Shift+G**,
-   type `~/Applications`, choose **ClaudeCmdEnter**, click **Open**.
+3. If SendKey for Claude is not in the list: click **+**, press **Cmd+Shift+G**,
+   type `~/Applications`, choose **SendKey for Claude**, click **Open**.
 
 That is the only permission. **Input Monitoring is not needed.**
 The helper notices the permission after about 2 seconds. No restart needed.
 
 **After a rebuild:** each build has a new signature, and macOS then treats the
 app as a new program. The switch can still look ON but no longer work. Fix:
-select ClaudeCmdEnter in the Accessibility list, click **–** to remove it,
+select SendKey for Claude in the Accessibility list, click **–** to remove it,
 then add it again (step 3) and turn it ON.
 
 ## The menu bar item
@@ -132,7 +132,7 @@ Click it to open the menu:
 - **Accessibility** – the icon is green when the permission is granted,
   grey when it is missing.
 - **Open Accessibility Settings…** – opens the right page in System Settings.
-- **Quit ClaudeCmdEnter** (⌘Q) – stops the helper until your next login.
+- **Quit SendKey for Claude** (⌘Q) – stops the helper until your next login.
 
 With **Enter to send** on, the helper has no keyboard access at all.
 
@@ -176,22 +176,22 @@ Nothing else is touched.
 Optional clean-up:
 
 - In System Settings → Privacy & Security → Accessibility, select
-  **ClaudeCmdEnter** and click **–**. Or run:
+  **SendKey for Claude** and click **–**. Or run:
 
   ```bash
-  tccutil reset Accessibility local.claudecmdenter
+  tccutil reset Accessibility local.sendkeyforclaude
   ```
 
 - To delete the saved send-key setting:
 
   ```bash
-  defaults delete local.claudecmdenter
+  defaults delete local.sendkeyforclaude
   ```
 
 ## Troubleshooting
 
 **The permission is ON but nothing happens (or the icon shows a small `!` in the star).**
-Remove ClaudeCmdEnter from the Accessibility list with **–**, add it again
+Remove SendKey for Claude from the Accessibility list with **–**, add it again
 with **+** (see Permission, step 3), and turn it ON. This is usually needed
 after a rebuild.
 
@@ -200,14 +200,14 @@ The item shows only while Claude is open. If Claude is open and you still do
 not see it, the helper is not running (maybe you chose Quit). Start it:
 
 ```bash
-launchctl kickstart gui/$UID/local.claudecmdenter
+launchctl kickstart gui/$UID/local.sendkeyforclaude
 ```
 
 If the helper is running but the item is invisible (this used to happen when
 Claude was reopened), restart the helper; `-k` stops the running copy first:
 
 ```bash
-launchctl kickstart -k gui/$UID/local.claudecmdenter
+launchctl kickstart -k gui/$UID/local.sendkeyforclaude
 ```
 
 On a MacBook with a notch, a full menu bar can also hide items. Close some
@@ -223,7 +223,7 @@ First turn on **Enter to send** or choose **Quit** in the menu, then remove it i
 **Is it running?**
 
 ```bash
-launchctl print gui/$UID/local.claudecmdenter | grep state
+launchctl print gui/$UID/local.sendkeyforclaude | grep state
 ```
 
 `state = running` means yes.
@@ -231,5 +231,5 @@ launchctl print gui/$UID/local.claudecmdenter | grep state
 **See the helper's status messages** (they never contain keys):
 
 ```bash
-log show --last 10m --predicate 'process == "ClaudeCmdEnter"'
+log show --last 10m --predicate 'process == "SendKeyForClaude"'
 ```

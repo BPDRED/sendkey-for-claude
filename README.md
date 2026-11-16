@@ -1,15 +1,16 @@
 <p align="center">
-  <img src="docs/icon.png" width="128" alt="ClaudeCmdEnter icon">
+  <img src="docs/icon.png" width="128" alt="SendKey for Claude app icon">
 </p>
 
-<h1 align="center">ClaudeCmdEnter</h1>
+<h1 align="center">SendKey for Claude</h1>
 
 <p align="center">
-  <b>⌘ + Enter</b> (or <b>⇧ Shift + Enter</b>) to send. <b>Enter</b> for a new line.<br>
-  A tiny menu bar helper for the Claude desktop app on Mac.
+  <b>Choose how you send messages in the Claude desktop app.</b><br>
+  Enter makes a new line. <b>⌘ + Enter</b> or <b>⇧ Shift + Enter</b> sends. You pick.
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/version-1.2-orange" alt="Version 1.2">
   <img src="https://img.shields.io/badge/macOS-12%2B-black?logo=apple" alt="macOS 12+">
   <img src="https://img.shields.io/badge/Intel%20%2B%20Apple%20Silicon-universal-blue" alt="Universal">
   <img src="https://img.shields.io/badge/RAM-~7%20MB-green" alt="About 7 MB of memory">
@@ -18,56 +19,82 @@
 </p>
 
 <p align="center">
-  <img src="docs/menubar.png" width="640" alt="The menu bar icon in its three states, on a light and a dark menu bar">
+  <a href="#install"><b>Install</b></a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#the-menu">The menu</a> ·
+  <a href="#privacy">Privacy</a> ·
+  <a href="#faq">FAQ</a>
 </p>
 
----
-
-Ever sent a half-written prompt to Claude because you pressed Enter to start a new
-line? ClaudeCmdEnter swaps the keys, but **only inside the Claude app**. You pick
-the send key:
-
-| You press | In Claude, ⌘ + Enter mode (default) | In Claude, Shift + Enter mode | Everywhere else |
-|---|---|---|---|
-| **Enter** | New line | New line | Unchanged |
-| **⌘ + Enter** | Send | Claude's own ⌘ + Enter (untouched) | Unchanged |
-| **Shift + Enter** | New line (as before) | Send | Unchanged |
-
-Shift + Enter mode is for people who want to keep Claude's own ⌘ + Enter
-behavior, which the default mode takes over.
-
-It starts by itself when Claude opens, puts a small icon in the menu bar, and gets
-out of the way when Claude quits. You keep opening Claude the usual way.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/menu-dark.png">
+    <img src="docs/menu-light.png" width="412" alt="The SendKey for Claude menu, open under its menu bar icon, with ⌘ Command + Enter to send turned on">
+  </picture>
+</p>
 
 > [!NOTE]
-> ClaudeCmdEnter is an independent, open-source project. It is not made by,
+> SendKey for Claude is an independent, open-source project. It is not made by,
 > affiliated with, or endorsed by Anthropic. "Claude" is a trademark of Anthropic.
+
+## Why
+
+In the Claude desktop app, **Enter sends your message**. If you write longer prompts,
+it's easy to send one half-finished just because you wanted a new line.
+
+SendKey for Claude is a tiny menu bar helper that changes that, **only inside the
+Claude app**: Enter makes a new line, and the send key is the one you choose. It
+starts by itself when Claude opens and gets out of the way when Claude quits. You
+keep opening Claude the usual way.
+
+## How it works
+
+Pick one of two send modes in the menu bar (or turn the helper off with *Enter to send*):
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/modes-dark.png">
+    <img src="docs/modes-light.png" width="788" alt="What each key does. ⌘ Command + Enter mode, the default: Enter makes a new line, ⌘ + Enter sends, Shift + Enter makes a new line. Shift + Enter mode: Enter makes a new line, ⌘ + Enter is left to Claude, Shift + Enter sends.">
+  </picture>
+</p>
+
+| You press | ⌘ Command + Enter mode (default) | ⇧ Shift + Enter mode |
+|---|---|---|
+| **Enter** | New line | New line |
+| **⌘ + Enter** | **Send** | Left to Claude, untouched |
+| **⇧ Shift + Enter** | New line (as before) | **Send** |
+
+**Which one should I pick?**
+
+- **⌘ Command + Enter** is the default and a common send shortcut in other apps.
+- **⇧ Shift + Enter** is for you if you want to keep Claude's own ⌘ + Enter behavior,
+  which the default mode takes over. In this mode the helper never touches ⌘ + Enter.
+
+In every other app, all of these keys work exactly as usual.
 
 ## Features
 
 - **Only in Claude.** Every other app keeps the normal Enter key.
-- **Three switches in the menu bar.** Pick *⌘ Command + Enter to send*,
-  *⇧ Shift + Enter to send*, or *Enter to send* (Claude's normal keys). Turning one
-  on turns the others off, and your choice is remembered.
-- **Keep Claude's own ⌘ + Enter if you want.** With *⇧ Shift + Enter to send*,
-  ⌘ + Enter reaches Claude untouched.
-- **Follows Claude.** The menu bar icon appears when Claude opens and disappears
-  when it quits.
-- **Clear status.** The icon is dimmed in *Enter to send* mode and shows a small
-  **!** when the Accessibility permission is missing.
+- **Your choice of send key.** ⌘ + Enter or ⇧ Shift + Enter, switched from the menu
+  bar, remembered across restarts.
+- **Follows Claude.** The menu bar icon appears when Claude opens and disappears when
+  it quits. No Dock icon, no window.
+- **Clear status.** The icon dims when the helper is off and shows a small **!** when
+  the Accessibility permission is missing.
 - **Tiny and quiet.** About 7 MB of memory, 0% CPU when idle, under 1 MB on disk.
 - **Private by design.** No network code, no key logging, no analytics.
-  [Read exactly what it can see.](#privacy)
+  [Exactly what it can see.](#privacy)
 - **Universal.** One app for Intel and Apple Silicon Macs.
-- **Small, readable code.** Plain Swift and AppKit, no dependencies, about 740
-  lines with comments.
+- **Small, readable code.** Plain Swift and AppKit, no dependencies. The key rules
+  are about 30 lines in [`Sources/KeyMap.swift`](Sources/KeyMap.swift).
 
 ## Install
 
 ### Requirements
 
-- macOS 12 Monterey or later
-- Apple's free Command Line Tools (to build the app). Full Xcode is **not** needed.
+- macOS 12 Monterey or later, on an Intel or Apple Silicon Mac
+- The Claude desktop app
+- Apple's free Command Line Tools, to build the app. Full Xcode is **not** needed.
   If you don't have them:
 
   ```bash
@@ -77,22 +104,22 @@ out of the way when Claude quits. You keep opening Claude the usual way.
 ### Build and install
 
 ```bash
-git clone https://github.com/BPDRED/claude-cmd-enter.git
-cd claude-cmd-enter
+git clone https://github.com/BPDRED/sendkey-for-claude.git
+cd sendkey-for-claude
 ./install.sh
 ```
 
-`install.sh` builds the app, copies it to `~/Applications/ClaudeCmdEnter.app`, and
-adds a small start-at-login file (`~/Library/LaunchAgents/local.claudecmdenter.plist`).
-macOS may show a *"Background Items Added"* notification: that's this file.
+`install.sh` builds the app, copies it to `~/Applications/SendKey for Claude.app`,
+adds a small start-at-login file (`~/Library/LaunchAgents/local.sendkeyforclaude.plist`)
+and starts it. macOS may show a *"Background Items Added"* notification: that's this file.
 
 ### Allow Accessibility (once)
 
 macOS doesn't let any app change key presses without your OK:
 
 1. Open **System Settings → Privacy & Security → Accessibility**.
-2. Turn on **ClaudeCmdEnter**. If it isn't in the list, click **+**, press
-   **⌘ + Shift + G**, type `~/Applications`, and choose **ClaudeCmdEnter**.
+2. Turn on **SendKey for Claude**. If it isn't in the list, click **+**, press
+   **⌘ + Shift + G**, type `~/Applications`, and choose **SendKey for Claude**.
 
 That's the only permission. Input Monitoring is not needed. The helper notices the
 change after about 2 seconds, without a restart.
@@ -102,9 +129,24 @@ change after about 2 seconds, without a restart.
 > paid Apple developer account, so macOS would block a downloaded copy. Building it
 > takes about a minute, and you get exactly the code you can read here.
 
-## How to use it
+### Upgrading from ClaudeCmdEnter
 
-Open Claude. The icon appears in the menu bar. Click it:
+This app used to be called **ClaudeCmdEnter**. Pull the latest code and run
+`./install.sh` again: it removes the old app and its start-at-login file, keeps your
+send-key choice, and installs SendKey for Claude. Then turn on **SendKey for Claude**
+in Accessibility, and remove the old **ClaudeCmdEnter** entry with **–**.
+
+## The menu
+
+Open Claude, then click the icon in the menu bar. Here it is with **⇧ Shift + Enter
+to send** turned on:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/menu-shift-dark.png">
+    <img src="docs/menu-shift-light.png" width="412" alt="The menu with ⇧ Shift + Enter to send turned on">
+  </picture>
+</p>
 
 | Menu item | What it does |
 |---|---|
@@ -113,10 +155,23 @@ Open Claude. The icon appears in the menu bar. Click it:
 | **Enter to send** | Claude's normal keys. The helper stops touching the keyboard |
 | **Accessibility** | Green icon: permission granted. Grey: missing |
 | **Open Accessibility Settings…** | Opens the right page in System Settings |
-| **Quit ClaudeCmdEnter** (⌘Q) | Stops the helper until your next login |
+| **Quit SendKey for Claude** (⌘Q) | Stops the helper until your next login |
 
-Only one of the three switches is on at a time. Your choice is remembered, also after
-a restart.
+Only one of the three switches is on at a time. Turning off the one that's on
+switches to *Enter to send*; turning *Enter to send* off brings back the send key you
+used last.
+
+### The menu bar icon
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/menubar-dark.png">
+    <img src="docs/menubar-light.png" width="640" alt="The menu bar icon in its three states: swap on, Enter to send (dimmed), and permission missing (a small ! in the centre)">
+  </picture>
+</p>
+
+It only shows while Claude is open. It's dimmed in *Enter to send* mode, and shows a
+small **!** when the Accessibility permission is missing.
 
 > [!TIP]
 > Your send key arrives in Claude as a normal Enter. So use it (**⌘ + Enter**, or
@@ -126,8 +181,8 @@ a restart.
 ## Privacy
 
 To change a key press, an app needs macOS's Accessibility permission. While it is
-listening, macOS hands it every key press, in every app. There is no way to ask
-for "only Enter in Claude". So here is exactly what ClaudeCmdEnter does with them:
+listening, macOS hands it every key press, in every app. There is no way to ask for
+"only Enter in Claude". So here is exactly what SendKey for Claude does with them:
 
 - It checks one thing: *is this Return/Enter, and is Claude the app in front?*
 - If not, the key passes through untouched. It is not read further, stored or logged.
@@ -144,8 +199,8 @@ What it never does:
 - It saves one setting: which send key you chose.
 
 You can check all of this yourself. The key rules are in
-[`Sources/KeyMap.swift`](Sources/KeyMap.swift) (about 30 lines), and the keyboard
-hook that uses them is the `handle` function in [`Sources/main.swift`](Sources/main.swift).
+[`Sources/KeyMap.swift`](Sources/KeyMap.swift), and the keyboard hook that uses them
+is the `handle` function in [`Sources/main.swift`](Sources/main.swift).
 
 ## Resource use
 
@@ -157,7 +212,6 @@ Measured on an Intel MacBook (macOS 15):
 | CPU | 0% when idle |
 | App size | about 0.9 MB (most of it is the app icon) |
 | Network connections | none |
-| Threads | 3 |
 
 ## FAQ
 
@@ -168,7 +222,7 @@ The icon only shows while Claude is open. If Claude is open and you still don't 
 it, restart the helper:
 
 ```bash
-launchctl kickstart -k gui/$UID/local.claudecmdenter
+launchctl kickstart -k gui/$UID/local.sendkeyforclaude
 ```
 
 On a MacBook with a notch, a full menu bar can hide icons. Try closing a few other
@@ -180,12 +234,12 @@ menu bar apps.
 
 This usually happens after a rebuild: each build gets a new local signature, and
 macOS treats it as a new app. In **System Settings → Privacy & Security →
-Accessibility**, select ClaudeCmdEnter, click **–**, then add it again with **+**
+Accessibility**, select SendKey for Claude, click **–**, then add it again with **+**
 and turn it on.
 </details>
 
 <details>
-<summary><b>System Settings shows a blank icon for ClaudeCmdEnter.</b></summary>
+<summary><b>System Settings shows a blank icon for SendKey for Claude.</b></summary>
 
 macOS sometimes caches an old icon. Quit System Settings (⌘Q) and open it again.
 If it's still blank, remove the entry with **–** and add it again.
@@ -203,7 +257,7 @@ No. It only changes keys in the Claude desktop app
 
 A tiny process starts at login and sleeps until macOS tells it that Claude has
 opened. That costs about 0% CPU and a few MB of memory. It has no keyboard access
-until Claude is open.
+until Claude is open and a send mode is on.
 </details>
 
 ## Uninstall
@@ -212,15 +266,16 @@ until Claude is open.
 ./uninstall.sh
 ```
 
-This stops the helper and removes the app and its start-at-login file. To also
-forget the permission and the saved setting:
+This stops the helper and removes the app and its start-at-login file (also the older
+ClaudeCmdEnter version, if it's still there). To also forget the permission and your
+saved choice:
 
 ```bash
-tccutil reset Accessibility local.claudecmdenter
-defaults delete local.claudecmdenter
+tccutil reset Accessibility local.sendkeyforclaude
+defaults delete local.sendkeyforclaude
 ```
 
-## Project layout
+## Building from source
 
 | Path | What it is |
 |---|---|
@@ -230,6 +285,7 @@ defaults delete local.claudecmdenter
 | `Sources/MenuRows.swift` | The switch rows and the Accessibility row |
 | `Resources/Info.plist` | App name and settings (no Dock icon) |
 | `tools/make_icon.swift` | Draws the app icon at build time |
+| `tools/make_screenshots.sh` | Re-draws the README images from the real menu rows |
 | `build.sh` / `install.sh` / `uninstall.sh` | Build, install, remove |
 | [`docs/INSTALL.md`](docs/INSTALL.md) | The full, step-by-step guide |
 
