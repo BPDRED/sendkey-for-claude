@@ -50,6 +50,10 @@ Then do the **Permission** step below.
 
 ### The manual way, step by step
 
+> **Upgrading from ClaudeCmdEnter** (the old name)? Use `./install.sh` instead, or
+> run `./uninstall.sh` first. Two helpers running at once would change the same key
+> twice, and ⌘ + Enter would stop sending.
+
 1. **Build.** This creates `build/SendKey for Claude.app`.
 
    ```bash
