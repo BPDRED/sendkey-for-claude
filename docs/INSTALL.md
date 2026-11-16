@@ -4,24 +4,29 @@ The detailed guide. For the short version, see the [README](../README.md).
 
 A very small helper for the Claude desktop app on Mac.
 
-| You press | What happens in Claude |
-|---|---|
-| **Enter** | new line |
-| **Cmd + Enter** | send the message |
-| Shift + Enter | new line (same as before) |
+You choose the send key in the menu bar: **⌘ + Enter** (the default) or
+**Shift + Enter**.
+
+| You press | ⌘ + Enter mode (default) | Shift + Enter mode |
+|---|---|---|
+| **Enter** | new line | new line |
+| **Cmd + Enter** | send the message | Claude's own Cmd + Enter (not changed) |
+| **Shift + Enter** | new line (same as before) | send the message |
 
 It works only inside Claude. In every other app, Enter works as usual.
 
-Tip: because Cmd+Enter becomes a "real" Enter, use **Cmd+Enter** anywhere in
-Claude where you need a normal Enter (for example to confirm a dialog).
+Tip: your send key becomes a "real" Enter. Use it (**Cmd+Enter**, or
+**Shift+Enter** in Shift mode) anywhere in Claude where you need a normal Enter
+(for example to confirm a dialog).
 
 ## What is in this project
 
 | File | What it is |
 |---|---|
 | `Sources/main.swift` | The program: watching for Claude, the keyboard hook, the menu |
+| `Sources/KeyMap.swift` | The key rules for each send mode |
 | `Sources/Icons.swift` | The menu bar and menu icons, drawn in code |
-| `Sources/MenuRows.swift` | The two switch rows and the Accessibility row of the menu |
+| `Sources/MenuRows.swift` | The switch rows and the Accessibility row of the menu |
 | `Resources/Info.plist` | The app's name and settings (no Dock icon) |
 | `tools/make_icon.swift` | Draws the app icon when you build (not part of the running app) |
 | `build.sh` | Builds the app for Intel and Apple Silicon Macs |
@@ -109,16 +114,21 @@ The icon is the star inside a circular arrow.
 
 | You see | Meaning |
 |---|---|
-| Star in the arrow | ⌘ Command + Enter sends, Enter adds a new line |
+| Star in the arrow | A swap is on: ⌘ + Enter (or Shift + Enter) sends, Enter adds a new line |
 | The same, dimmed (grey) | Enter sends, the normal way |
 | A small **!** in the centre of the star | The Accessibility permission is missing (or not working) |
 
 Click it to open the menu:
 
-- **⌘ Command + Enter to send** (switch) – Enter adds a new line.
+- **⌘ Command + Enter to send** (switch, the default) – Enter adds a new line,
+  ⌘ + Enter sends.
+- **⇧ Shift + Enter to send** (switch) – Enter adds a new line, Shift + Enter
+  sends, and ⌘ + Enter is not changed, so Claude's own ⌘ + Enter still works.
 - **Enter to send** (switch) – Claude's normal keys.
-  The two switches are a pair: turning one on turns the other off.
-  Your choice is remembered.
+  Only one of the three switches is on at a time: turning one on turns the others
+  off. Turning off the one that is on switches to **Enter to send**; turning
+  **Enter to send** off brings back the send key you used last.
+  Your choice is remembered, also after a restart.
 - **Accessibility** – the icon is green when the permission is granted,
   grey when it is missing.
 - **Open Accessibility Settings…** – opens the right page in System Settings.
@@ -128,14 +138,16 @@ With **Enter to send** on, the helper has no keyboard access at all.
 
 ## What the app can and cannot see
 
-While Claude is running and **⌘ Command + Enter to send** is on, macOS gives the helper every key
+While Claude is running and **⌘ Command + Enter to send** or **⇧ Shift + Enter
+to send** is on, macOS gives the helper every key
 press, in any app. This is how macOS works: a helper cannot ask for "only
 Enter" or "only Claude". So here is exactly what the code does with it:
 
 - It checks one thing: *is this key Return/Enter, and is Claude in front?*
 - If not, the key passes through unchanged. It is not read further, not saved,
   not written to a log.
-- If yes, it adds Shift (new line) or removes Cmd (send). Nothing else.
+- If yes, it adds Shift (new line), or removes the Cmd or Shift of your send key
+  (send). Nothing else. The rules are in `Sources/KeyMap.swift`.
 
 What it does **not** do:
 
@@ -202,7 +214,8 @@ On a MacBook with a notch, a full menu bar can also hide items. Close some
 other menu bar apps to check.
 
 **Enter does nothing in a Claude dialog or button.**
-Press **Cmd+Enter** there (it arrives as a normal Enter), or turn on **Enter to send**.
+Press your send key there (**Cmd+Enter**, or **Shift+Enter** in Shift mode; it
+arrives as a normal Enter), or turn on **Enter to send**.
 
 **I want to remove the permission.**
 First turn on **Enter to send** or choose **Quit** in the menu, then remove it in System Settings.

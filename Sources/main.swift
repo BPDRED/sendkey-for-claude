@@ -1,27 +1,32 @@
 // ClaudeCmdEnter — a tiny menu bar helper for the Claude desktop app.
 //
-//   Enter      -> new line  (Claude receives it as Shift+Enter)
-//   Cmd+Enter  -> send      (Claude receives it as plain Enter)
+//   Enter                -> new line  (Claude receives it as Shift+Enter)
+//   ⌘+Enter (default)    -> send      (Claude receives it as plain Enter)
+//   or, if you pick it:
+//   Shift+Enter          -> send, and ⌘+Enter is left to Claude
 //
 // What this program does, and nothing more:
 //   * It waits, doing nothing, until the Claude app is opened.
-//   * While Claude is running (and "⌘ Command + Enter to send" is on) it holds a keyboard hook
-//     (macOS calls it an "event tap"). The hook only asks one question about
-//     each key press: "is this the Return/Enter key, and is Claude in front?"
+//   * While Claude is running (and a swap is chosen, not "Enter to send") it holds
+//     a keyboard hook (macOS calls it an "event tap"). The hook only asks one
+//     question about each key press: "is this the Return/Enter key, and is Claude
+//     in front?" The rules are in Sources/KeyMap.swift.
 //   * When Claude quits, the hook and the menu bar item are removed.
 //
 // It never stores, prints or sends any key. There is no network code.
-// The only thing it saves is which send key you chose (in UserDefaults).
+// The only things it saves are which send key you chose (in UserDefaults).
 //
-// Other files: Sources/Icons.swift (the drawings), Sources/MenuRows.swift (the
-// switch rows), tools/make_icon.swift (draws the app icon at build time only).
+// Other files: Sources/KeyMap.swift (the key rules), Sources/Icons.swift (the
+// drawings), Sources/MenuRows.swift (the switch rows), tools/make_icon.swift
+// (draws the app icon at build time only).
 
 import AppKit
 
 let claudeBundleID = "com.anthropic.claudefordesktop"
 let returnKey: Int64 = 36          // the main Return key
 let keypadEnterKey: Int64 = 76     // Enter on the number pad (or fn+Return)
-let enabledKey = "swapEnabled"     // name of the saved send-key setting
+let enabledKey = "swapEnabled"     // saved: is a swap on (false = "Enter to send")
+let shortcutKey = "sendShortcut"   // saved: which swap ("cmd" or "shift")
 let accessibilityPane = URL(string:
     "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 
@@ -33,20 +38,29 @@ final class Helper: NSObject, NSMenuDelegate {
     var retryTimer: Timer?             // runs only while we wait for the permission
     var statusItem: NSStatusItem?      // the menu bar item, made once, shown only while Claude is open
     var cmdRow: SwitchRow!             // "⌘ Command + Enter to send" switch
-    var enterRow: SwitchRow!           // "Enter to send" switch (the two are a pair)
+    var shiftRow: SwitchRow!           // "⇧ Shift + Enter to send" switch
+    var enterRow: SwitchRow!           // "Enter to send" switch (only one of the three is on)
     var accessRow: InfoRow!            // Accessibility: Granted / Not granted
 
-    /// The send-key choice, remembered between launches.
-    /// true = "⌘ Command + Enter to send", false = "Enter to send" (no keyboard hook).
+    /// Is a swap on? Remembered between launches.
+    /// false = "Enter to send": Claude's normal keys, no keyboard hook at all.
     var enabled: Bool {
         get { UserDefaults.standard.bool(forKey: enabledKey) }
         set { UserDefaults.standard.set(newValue, forKey: enabledKey) }
     }
 
+    /// Which swap: ⌘ + Enter (default) or Shift + Enter. Remembered between launches,
+    /// also while "Enter to send" is on, so turning a swap back on brings back your choice.
+    var shortcut: SendShortcut {
+        get { SendShortcut(rawValue: UserDefaults.standard.string(forKey: shortcutKey) ?? "") ?? .cmd }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: shortcutKey) }
+    }
+
     // MARK: - Watching for Claude
 
     func start() {
-        UserDefaults.standard.register(defaults: [enabledKey: true])   // ⌘ + Enter by default
+        UserDefaults.standard.register(defaults: [enabledKey: true,      // a swap is on by default
+                                                  shortcutKey: "cmd"])    // ⌘ + Enter by default
         // Ask macOS to tell us when any app opens or quits. This is not keyboard access.
         let center = NSWorkspace.shared.notificationCenter
         for name in [NSWorkspace.didLaunchApplicationNotification,
@@ -95,7 +109,7 @@ final class Helper: NSObject, NSMenuDelegate {
             _ = AXIsProcessTrustedWithOptions([prompt: true] as CFDictionary)
         }
 
-        // Keyboard hook: only while Claude runs, ⌘ + Enter mode is on, and we are allowed.
+        // Keyboard hook: only while Claude runs, a swap is on, and we are allowed.
         if claudeRunning && enabled && trusted { startTap() } else { stopTap() }
 
         // If the hook should exist but does not (permission missing), check again every 2 s.
@@ -167,13 +181,10 @@ final class Helper: NSObject, NSMenuDelegate {
         guard NSWorkspace.shared.frontmostApplication?.bundleIdentifier == claudeBundleID
         else { return untouched }
 
-        let modifiers = event.flags.intersection(
-            [.maskShift, .maskControl, .maskAlternate, .maskCommand])
-        if modifiers.isEmpty {
-            event.flags.insert(.maskShift)        // Enter      -> Shift+Enter (new line)
-        } else if modifiers == .maskCommand {
-            event.flags.remove(.maskCommand)      // Cmd+Enter  -> Enter       (send)
-        }                                         // Shift+Enter etc. stay as they are
+        // Change the modifier keys as the chosen shortcut says (see KeyMap.swift).
+        if let newFlags = remap(event.flags, for: shortcut) {
+            event.flags = newFlags
+        }
         return untouched
     }
 
@@ -201,11 +212,19 @@ final class Helper: NSObject, NSMenuDelegate {
             header.isEnabled = false
         }
 
-        // The two switches are a pair: turning one on turns the other off.
+        // Three switches, only one is on: turning one on turns the others off.
+        // Turning the active one off falls back to "Enter to send"; turning
+        // "Enter to send" off brings back the last swap you used.
         cmdRow = SwitchRow(icon: Icons.glyph(.command, bold: true), italic: "⌘ Command + Enter", rest: " to send",
-                           subtitle: "Enter adds a new line") { [weak self] on in self?.setSwap(on) }
+                           subtitle: "Enter adds a new line") { [weak self] on in
+            self?.choose(on ? .cmd : nil) }
+        shiftRow = SwitchRow(icon: Icons.glyph(.shift, bold: true), italic: "⇧ Shift + Enter", rest: " to send",
+                             subtitle: "Enter adds a new line · ⌘ + Enter untouched") { [weak self] on in
+            self?.choose(on ? .shift : nil) }
         enterRow = SwitchRow(icon: Icons.enterArrow(), italic: "Enter", rest: " to send",
-                             subtitle: "Claude's normal keys") { [weak self] on in self?.setSwap(!on) }
+                             subtitle: "Claude's normal keys") { [weak self] on in
+            guard let self = self else { return }
+            self.choose(on ? nil : self.shortcut) }
         accessRow = InfoRow(icon: Icons.symbol("accessibility"), label: "Accessibility")
 
         let settings = NSMenuItem(title: "Open Accessibility Settings…",
@@ -217,7 +236,7 @@ final class Helper: NSObject, NSMenuDelegate {
         settings.target = self
         quit.target = self
 
-        let rows = [header, viewItem(cmdRow), viewItem(enterRow), .separator(),
+        let rows = [header, viewItem(cmdRow), viewItem(shiftRow), viewItem(enterRow), .separator(),
                     viewItem(accessRow), settings, .separator(), quit]
         rows.forEach { menu.addItem($0) }
         item.menu = menu
@@ -241,7 +260,8 @@ final class Helper: NSObject, NSMenuDelegate {
         statusItem?.button?.image = Icons.glyph(.star, warning: !trusted || broken, size: 22)
         statusItem?.button?.appearsDisabled = !enabled
 
-        cmdRow.isOn = enabled
+        cmdRow.isOn = enabled && shortcut == .cmd
+        shiftRow.isOn = enabled && shortcut == .shift
         enterRow.isOn = !enabled
         accessRow.iconView.image = Icons.symbol("accessibility")
         accessRow.iconView.contentTintColor = (trusted && !broken) ? .systemGreen : .tertiaryLabelColor
@@ -268,8 +288,12 @@ final class Helper: NSObject, NSMenuDelegate {
     /// Refresh the texts each time the menu is opened (the permission may have changed).
     func menuNeedsUpdate(_ menu: NSMenu) { refresh() }
 
-    /// true = "⌘ Command + Enter to send", false = "Enter to send".
-    func setSwap(_ on: Bool) { enabled = on; refresh() }
+    /// Pick the send key: .cmd, .shift, or nil for "Enter to send" (no swap).
+    func choose(_ choice: SendShortcut?) {
+        if let choice = choice { shortcut = choice }
+        enabled = choice != nil
+        refresh()
+    }
     @objc func openSettings() { NSWorkspace.shared.open(accessibilityPane) }
     @objc func quitHelper() { stopTap(); NSApp.terminate(nil) }
 }

@@ -6,9 +6,9 @@
 import AppKit
 
 enum Icons {
-    enum Inner { case star, command }
+    enum Inner { case star, command, shift }
 
-    /// The circular arrow with the star (menu bar) or the ⌘ (menu row) inside.
+    /// The circular arrow with the star (menu bar), the ⌘ or the ⇧ (menu rows) inside.
     /// `warning` adds the small "!" error sign in the centre of the star.
     /// `bold` (menu rows) draws the arrow about twice as thick, to match the
     /// weight of the other menu icons; the menu bar keeps the fine lines.
@@ -27,6 +27,7 @@ enum Icons {
             switch inner {
             case .star: drawStar(ctx)
             case .command: drawCommand(ctx, lineWidth: 0.86 * weight)
+            case .shift: drawShift(ctx, lineWidth: 0.86 * weight)
             }
             if warning { drawWarning(ctx) }
             return true
@@ -134,6 +135,18 @@ enum Icons {
             }
             ctx.addLines(between: points)
         }
+        ctx.setLineWidth(lineWidth)
+        ctx.strokePath()
+    }
+
+    /// The ⇧ Shift key (an outlined arrow pointing up), same line thickness as the
+    /// arrow and the same size as the ⌘, in the centre. Drawn on a 0-24 grid, scaled to 50%.
+    private static func drawShift(_ ctx: CGContext, lineWidth: CGFloat) {
+        let s: CGFloat = 0.5
+        let outline: [(CGFloat, CGFloat)] = [(12, 4), (20, 12.5), (15.5, 12.5), (15.5, 20),
+                                             (8.5, 20), (8.5, 12.5), (4, 12.5)]
+        ctx.addLines(between: outline.map { CGPoint(x: 12 + ($0.0 - 12) * s, y: 12 + ($0.1 - 12) * s) })
+        ctx.closePath()
         ctx.setLineWidth(lineWidth)
         ctx.strokePath()
     }

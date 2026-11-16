@@ -3,6 +3,10 @@
 
 import AppKit
 
+/// Width of the custom menu rows. Wide enough for the longest line,
+/// "Enter adds a new line · ⌘ + Enter untouched", next to the icon and the switch.
+let menuRowWidth: CGFloat = 340
+
 /// A menu row with an icon, a title, a small grey line under it, and a switch on the right.
 /// Clicking anywhere on the row flips the switch.
 final class SwitchRow: NSView {
@@ -17,7 +21,7 @@ final class SwitchRow: NSView {
     /// `italic` is the start of the title shown in italics (the keys), `rest` follows it.
     init(icon: NSImage, italic: String, rest: String, subtitle: String, onFlip: @escaping (Bool) -> Void) {
         self.onFlip = onFlip
-        super.init(frame: NSRect(x: 0, y: 0, width: 300, height: 44))
+        super.init(frame: NSRect(x: 0, y: 0, width: menuRowWidth, height: 44))
 
         let iconView = NSImageView(image: icon)
         iconView.contentTintColor = .labelColor
@@ -32,6 +36,12 @@ final class SwitchRow: NSView {
         let subField = NSTextField(labelWithString: subtitle)
         subField.font = .systemFont(ofSize: 11)
         subField.textColor = .secondaryLabelColor
+        // Each line stays on one line, never wraps or gets squeezed.
+        for field in [titleField, subField] {
+            field.maximumNumberOfLines = 1
+            field.lineBreakMode = .byTruncatingTail
+            field.setContentCompressionResistancePriority(.required, for: .horizontal)
+        }
         let texts = NSStackView(views: [titleField, subField])
         texts.orientation = .vertical
         texts.alignment = .leading
@@ -75,7 +85,7 @@ final class InfoRow: NSView {
     let statusField = NSTextField(labelWithString: "")
 
     init(icon: NSImage?, label: String) {
-        super.init(frame: NSRect(x: 0, y: 0, width: 300, height: 28))
+        super.init(frame: NSRect(x: 0, y: 0, width: menuRowWidth, height: 28))
         iconView.image = icon
         let labelField = NSTextField(labelWithString: label)
         labelField.font = .menuFont(ofSize: 13)

@@ -5,7 +5,7 @@
 <h1 align="center">ClaudeCmdEnter</h1>
 
 <p align="center">
-  <b>⌘ + Enter</b> to send. <b>Enter</b> for a new line.<br>
+  <b>⌘ + Enter</b> (or <b>⇧ Shift + Enter</b>) to send. <b>Enter</b> for a new line.<br>
   A tiny menu bar helper for the Claude desktop app on Mac.
 </p>
 
@@ -24,13 +24,17 @@
 ---
 
 Ever sent a half-written prompt to Claude because you pressed Enter to start a new
-line? ClaudeCmdEnter swaps the keys, but **only inside the Claude app**:
+line? ClaudeCmdEnter swaps the keys, but **only inside the Claude app**. You pick
+the send key:
 
-| You press | In Claude | Everywhere else |
-|---|---|---|
-| **Enter** | New line | Unchanged |
-| **⌘ + Enter** | Send | Unchanged |
-| Shift + Enter | New line (as before) | Unchanged |
+| You press | In Claude, ⌘ + Enter mode (default) | In Claude, Shift + Enter mode | Everywhere else |
+|---|---|---|---|
+| **Enter** | New line | New line | Unchanged |
+| **⌘ + Enter** | Send | Claude's own ⌘ + Enter (untouched) | Unchanged |
+| **Shift + Enter** | New line (as before) | Send | Unchanged |
+
+Shift + Enter mode is for people who want to keep Claude's own ⌘ + Enter
+behavior, which the default mode takes over.
 
 It starts by itself when Claude opens, puts a small icon in the menu bar, and gets
 out of the way when Claude quits. You keep opening Claude the usual way.
@@ -42,8 +46,11 @@ out of the way when Claude quits. You keep opening Claude the usual way.
 ## Features
 
 - **Only in Claude.** Every other app keeps the normal Enter key.
-- **Two switches in the menu bar.** Pick *⌘ Command + Enter to send* or *Enter to
-  send* (Claude's normal keys). Turning one on turns the other off.
+- **Three switches in the menu bar.** Pick *⌘ Command + Enter to send*,
+  *⇧ Shift + Enter to send*, or *Enter to send* (Claude's normal keys). Turning one
+  on turns the others off, and your choice is remembered.
+- **Keep Claude's own ⌘ + Enter if you want.** With *⇧ Shift + Enter to send*,
+  ⌘ + Enter reaches Claude untouched.
 - **Follows Claude.** The menu bar icon appears when Claude opens and disappears
   when it quits.
 - **Clear status.** The icon is dimmed in *Enter to send* mode and shows a small
@@ -52,7 +59,7 @@ out of the way when Claude quits. You keep opening Claude the usual way.
 - **Private by design.** No network code, no key logging, no analytics.
   [Read exactly what it can see.](#privacy)
 - **Universal.** One app for Intel and Apple Silicon Macs.
-- **Small, readable code.** Plain Swift and AppKit, no dependencies, about 670
+- **Small, readable code.** Plain Swift and AppKit, no dependencies, about 740
   lines with comments.
 
 ## Install
@@ -101,17 +108,20 @@ Open Claude. The icon appears in the menu bar. Click it:
 
 | Menu item | What it does |
 |---|---|
-| **⌘ Command + Enter to send** | Enter adds a new line, ⌘ + Enter sends |
+| **⌘ Command + Enter to send** (default) | Enter adds a new line, ⌘ + Enter sends |
+| **⇧ Shift + Enter to send** | Enter adds a new line, Shift + Enter sends, ⌘ + Enter is left to Claude |
 | **Enter to send** | Claude's normal keys. The helper stops touching the keyboard |
 | **Accessibility** | Green icon: permission granted. Grey: missing |
 | **Open Accessibility Settings…** | Opens the right page in System Settings |
 | **Quit ClaudeCmdEnter** (⌘Q) | Stops the helper until your next login |
 
-Your choice is remembered.
+Only one of the three switches is on at a time. Your choice is remembered, also after
+a restart.
 
 > [!TIP]
-> Because ⌘ + Enter arrives in Claude as a normal Enter, use **⌘ + Enter** anywhere
-> in Claude you need a plain Enter, for example to confirm a dialog.
+> Your send key arrives in Claude as a normal Enter. So use it (**⌘ + Enter**, or
+> **Shift + Enter** in Shift mode) anywhere in Claude you need a plain Enter, for
+> example to confirm a dialog.
 
 ## Privacy
 
@@ -121,19 +131,21 @@ for "only Enter in Claude". So here is exactly what ClaudeCmdEnter does with the
 
 - It checks one thing: *is this Return/Enter, and is Claude the app in front?*
 - If not, the key passes through untouched. It is not read further, stored or logged.
-- If yes, it adds Shift (new line) or removes ⌘ (send). Nothing else.
+- If yes, it adds Shift (new line), or removes the ⌘ or Shift of your send key (send).
+  Nothing else.
 
 What it never does:
 
 - **No network.** The program has no network code at all.
 - **No key logging.** No key is ever saved or printed.
 - **No keyboard access at all** while Claude is closed or *Enter to send* is on.
-  The keyboard hook only exists while Claude runs in ⌘ + Enter mode.
+  The keyboard hook only exists while Claude runs in ⌘ + Enter or Shift + Enter mode.
 - **No changes to Claude.** `Claude.app` is never modified.
 - It saves one setting: which send key you chose.
 
-You can check all of this in [`Sources/main.swift`](Sources/main.swift). The
-keyboard code is the `handle` function.
+You can check all of this yourself. The key rules are in
+[`Sources/KeyMap.swift`](Sources/KeyMap.swift) (about 30 lines), and the keyboard
+hook that uses them is the `handle` function in [`Sources/main.swift`](Sources/main.swift).
 
 ## Resource use
 
@@ -213,6 +225,7 @@ defaults delete local.claudecmdenter
 | Path | What it is |
 |---|---|
 | `Sources/main.swift` | Watches for Claude, the keyboard hook, the menu |
+| `Sources/KeyMap.swift` | The key rules for each send mode |
 | `Sources/Icons.swift` | Menu bar and menu icons, drawn in code |
 | `Sources/MenuRows.swift` | The switch rows and the Accessibility row |
 | `Resources/Info.plist` | App name and settings (no Dock icon) |
